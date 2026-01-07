@@ -1,27 +1,40 @@
-# Community Hub Repository
+# 👥 Contributor Hub
 
-The Community Hub serves as a collaborative platform for gathering and managing community-driven contributions. Whether you're proposing new content, requesting features, reporting issues, or ideation for dApps, this repo is your entry point. We use GitHub's built-in features like issues, projects, and automations to ensure ideas are triaged efficiently and turned into actionable tasks.
+The **Contributor Hub** is the central collaborative platform for gathering and managing community-driven contributions within the `midnightntwrk` organization. It serves as the primary entry point for proposing new content, requesting features, reporting issues, or ideating for dApps on the Midnight Network.
 
-Key Features:
+## 🛠 How to Contribute
 
 - [Public Boards](https://github.com/orgs/midnightntwrk/projects/36): For transparency in triage and task management.
 - Automated Workflow (coming soon): Issues are automatically added to boards and moved based on labels.
 - Inclusive Contribution: Open to all, with guidelines for high-quality submissions.
 
-This repo is part of the `midnightntwrk` organization.
+We welcome contributions of all types, including code, documentation, and technical content.
 
-## Create an Issue 
+### Submitting Issues
+Use our GitHub Issue Forms to submit:
+* **Bug Reports:** Provide detailed information including steps to reproduce and expected behavior. Note: if a bug pertains to a specific repo (like `midnight-js`), report it there directly.
+* **Feature Requests:** Clearly describe the proposed feature, its benefits, and the expected outcome.
+* **Content Proposals:** Propose new tutorials, blog posts, or documentation improvements.
 
-<div align="center">
+### Pull Request Process
+1.  **Fork the Repo:** Create your own fork of the repository.
+2.  **Create a Branch:** Use a descriptive name prefixed with a short moniker (e.g., `jill-my-feature`).
+3.  **Follow Standards:** Adhere to the coding style guides and ensure new functionality includes unit and integration tests.
+4.  **License Header:** Ensure all new files include the Apache-2.0 license header.
+5.  **Submit:** Open a PR to the main repository. Avoid `--force` pushes to assist the review process.
 
-[![Report a Bug](https://img.shields.io/badge/Report_a_Bug-d73a4a?style=for-the-badge&logo=openbugbounty&logoColor=white)](https://github.com/midnightntwrk/Community-Hub/issues/new?template=bug.yml)
-[![Request a Feature](https://img.shields.io/badge/Request_a_Feature-58a6ff?style=for-the-badge&logo=nebula&logoColor=white)](https://github.com/midnightntwrk/Community-Hub/issues/new?template=feature-request-suggestion.yml)
-[![Suggest Content](https://img.shields.io/badge/Suggest_Content-3fb950?style=for-the-badge&logo=readme&logoColor=white)](https://github.com/midnightntwrk/Community-Hub/issues/new?template=content-proposal.yml)
-[![Propose a dApp](https://img.shields.io/badge/Propose_a_dApp-9e7ce3?style=for-the-badge&logo=createreactapp&logoColor=white)](https://github.com/midnightntwrk/Community-Hub/issues/new?template=dapp-proposal.yml)
+## 📅 Events & Showcases
 
-</div>
+If you are participating in a Midnight event (such as **Hacktoberfest** or the **Midnight Summit**), you can showcase your work here:
+1.  Navigate to the `/events` folder.
+2.  Create a Markdown file in the specific event sub-folder (e.g., `events/hacktoberfest-2025/your-handle.md`).
+3.  Fill out the submission template found in the `events/README.md`.
 
-## Issue Templates
+## ⚖️ Governance & Security
+
+* **Code of Conduct:** We are committed to a positive, inclusive, and harassment-free environment. Please review our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+* **Security Policy:** Report security vulnerabilities privately via GitHub's private reporting or by emailing `security@midnight.foundation`.
+* **License:** This project is licensed under the **Apache License, Version 2.0**.
 
 To standardize submissions and make it easier for contributors, we provide the following issue templates:Content Proposal: For suggesting new content like articles, tutorials, or resources. Use this to propose ideas that educate or engage the community.
 
