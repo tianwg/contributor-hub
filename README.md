@@ -30,6 +30,14 @@ If you are participating in a Midnight event (such as **Hacktoberfest** or the *
 2.  Create a Markdown file in the specific event sub-folder (e.g., `events/hacktoberfest-2025/your-handle.md`).
 3.  Fill out the submission template found in the `events/README.md`.
 
+## Bounty Programs
+
+We run content and development bounties rewarded in NIGHT tokens. All participants must complete KYC verification before receiving tokens.
+
+- **[Bounty Program Terms](legal/BOUNTY_TERMS.md):** Standard terms for all bounty participants.
+- **[Contributor Agreement](legal/CONTRIBUTOR_AGREEMENT.md):** Additional terms for premium-tier engagements.
+- **[Submit a Bounty](../../issues/new?template=content-bounty.yml):** Use the Content Bounty issue template to submit your work.
+
 ## ⚖️ Governance & Security
 
 * **Code of Conduct:** We are committed to a positive, inclusive, and harassment-free environment. Please review our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
