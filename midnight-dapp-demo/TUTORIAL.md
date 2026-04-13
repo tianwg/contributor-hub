@@ -750,12 +750,41 @@ This dApp demonstrates several privacy features:
 
 ## Troubleshooting Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| Wallet not detected | Install Lace or 1AM wallet extension and refresh |
-| Proof server error | Run `docker-compose up` to start the proof server |
-| Contract not found | Ensure you've deployed the contract first |
-| Network errors | Verify you're connected to Midnight Preprod |
+### Wallet Detection Problems
+
+If your wallet is not detected, ensure you have properly installed either the Lace wallet or 1AM wallet browser extension. Refresh the page after installation. Sometimes browser extensions require a page reload to register with the window.midnight object.
+
+### Proof Server Connection Errors
+
+The proof server is essential for generating zero-knowledge proofs. If you encounter proof generation errors:
+
+1. Ensure Docker is running: `docker ps`
+2. Start the proof server: `docker-compose up -d`
+3. Check the server health: `curl http://localhost:6300/health`
+
+### Contract Deployment Failures
+
+If contract deployment fails with "Insufficient funds" or "Transaction rejected":
+
+1. Ensure your wallet has some testnet ADA for transaction fees
+2. Check that you're connected to the Preprod network
+3. Verify the node and indexer URLs are correct in your wallet configuration
+
+### State Reading Issues
+
+When reading contract state fails:
+
+1. Verify the contract has been deployed and you have the correct address
+2. Ensure the backend is running on port 4000
+3. Check that the frontend proxy is correctly configured in vite.config.ts
+
+### Network Connection Problems
+
+Common network issues include:
+
+- **Timeout errors**: The indexer may be slow to sync. Wait a few moments and retry.
+- **Invalid network**: Verify you're using 'preprod' network, not mainnet.
+- **CORS errors**: Ensure the backend has CORS enabled (it does by default).
 
 ## Next Steps to Extend the dApp
 
