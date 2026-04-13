@@ -698,7 +698,51 @@ button:hover:not(:disabled) {
 }
 ```
 
-## Step 6: Running the Application
+## Step 6: Setting Up the Proof Server
+
+The proof server is critical for generating zero-knowledge proofs. It runs as a Docker container and provides the computational resources needed to create ZK proofs for your contract circuits.
+
+### Docker Setup
+
+Create a `docker-compose.yml` in your project root:
+
+```yaml
+version: '3.8'
+
+services:
+  proof-server:
+    image: midnightntwrk/proof-server:8.0.3
+    ports:
+      - "6300:6300"
+    command: midnight-proof-server -v
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6300/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+```
+
+### Starting the Proof Server
+
+```bash
+# Start the proof server
+npm run env:up
+
+# Verify it's running
+curl http://localhost:6300/health
+# Expected: {"status":"ok","version":"8.0.3"}
+```
+
+### Troubleshooting Proof Server Issues
+
+If you encounter proof generation errors:
+
+1. **Container not starting**: Ensure Docker is running with `docker ps`
+2. **Port conflicts**: If port 6300 is in use, modify the docker-compose.yml port mapping
+3. **Memory issues**: ZK proof generation requires significant memory; ensure your system has at least 4GB available
+4. **Timeout errors**: Increase the timeout in your frontend API calls when calling circuits
+
+## Step 7: Running the Application
 
 ### Starting the Backend
 
@@ -727,6 +771,201 @@ npm run dev
 5. Enter an amount and click "Deposit" to add funds
 6. Click "Read State" to see the current vault status
 7. Click "Withdraw" to remove funds
+
+### Running with Docker (Alternative)
+
+For a fully containerized setup:
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+## Step 8: Testing the Contract
+
+While this demo uses a mock backend, in production you'd integrate with the actual Midnight network. Here's how to test your contract logic:
+
+### Unit Testing the Contract Runtime
+
+Create `contracts/src/contract.test.ts`:
+
+```typescript
+import { Contract, ledger } from './managed/private-vault/contract/index.js';
+
+const mockWitnesses = {
+  localSecretKey: () => new Uint8Array(32).fill(1),
+};
+
+describe('Private Vault Contract', () => {
+  let contract: Contract;
+
+  beforeEach(() => {
+    contract = new Contract(mockWitnesses);
+  });
+
+  describe('deposit', () => {
+    it('should increase totalDeposits when vault is active', () => {
+      const initialState = ledger({
+        vaultState: 1, // ACTIVE
+        totalDeposits: 0n,
+        owner: new Uint8Array(32),
+        sequence: 1n,
+      });
+
+      const result = contract.circuits.deposit({
+        originalState: initialState,
+        privateState: {},
+      }, 100n);
+
+      expect(result.state.totalDeposits).toBe(100n);
+    });
+
+    it('should fail when vault is not active', () => {
+      const initialState = ledger({
+        vaultState: 0, // UNINITIALIZED
+        totalDeposits: 0n,
+        owner: new Uint8Array(32),
+        sequence: 1n,
+      });
+
+      expect(() => {
+        contract.circuits.deposit({
+          originalState: initialState,
+          privateState: {},
+        }, 100n);
+      }).toThrow('Vault is not active');
+    });
+  });
+
+  describe('withdraw', () => {
+    it('should decrease totalDeposits when owner calls', () => {
+      const ownerKey = new Uint8Array(32).fill(1);
+      const mockWitnessesForOwner = {
+        localSecretKey: () => ownerKey,
+      };
+      const ownerContract = new Contract(mockWitnessesForOwner);
+
+      const initialState = ledger({
+        vaultState: 1, // ACTIVE
+        totalDeposits: 100n,
+        owner: new Uint8Array(32).fill(1), // Same as secret key hash
+        sequence: 1n,
+      });
+
+      const result = ownerContract.circuits.withdraw({
+        originalState: initialState,
+        privateState: {},
+      }, 50n);
+
+      expect(result.state.totalDeposits).toBe(50n);
+    });
+  });
+});
+```
+
+### Running Tests
+
+```bash
+cd contracts
+npm test
+```
+
+## Step 9: Security Considerations
+
+When building production Midnight dApps, consider these security best practices:
+
+### Private Key Management
+
+- **Never expose secret keys**: The witness implementations should retrieve keys from secure storage (wallet extension) rather than hardcoding them
+- **Use hardware wallets**: For high-value transactions, integrate with hardware wallet support
+- **Key rotation**: Implement key rotation strategies for long-running vaults
+
+### Circuit Security
+
+- **Input validation**: Always validate circuit inputs within the Compact contract using assertions
+- **Overflow protection**: Use appropriate integer types and check for overflow conditions
+- **Replay protection**: The sequence counter prevents transaction replay, but ensure it's properly enforced
+
+### Privacy Considerations
+
+- **Data minimization**: Only store necessary data on-chain; keep sensitive data off-chain when possible
+- **Timing attacks**: Be aware that transaction timing can leak information
+- **Metadata leakage**: Consider what metadata (transaction amounts, timing) might leak privacy
+
+### Smart Contract Best Practices
+
+```compact
+// Good: Explicit state checks
+export circuit deposit(amount: Uint64): [] {
+  assert(vaultState == VaultState.ACTIVE, "Vault is not active");
+  // ... deposit logic
+}
+
+// Good: Ownership verification
+export circuit withdraw(amount: Uint64): [] {
+  assert(owner == publicKey(localSecretKey(), sequence as Field as Bytes<32>), "Not the owner");
+  // ... withdraw logic
+}
+
+// Good: Amount validation
+assert(amount <= totalDeposits, "Insufficient funds");
+```
+
+## Step 10: Production Deployment
+
+### Building for Production
+
+```bash
+# Build all workspaces
+npm run build
+
+# Build individual packages
+npm run build --workspace=@midnight-dapp-demo/contracts
+npm run build --workspace=@midnight-dapp-demo/api
+npm run build --workspace=@midnight-dapp-demo/frontend
+npm run build --workspace=@midnight-dapp-demo/backend
+```
+
+### Deploying the Backend
+
+For production deployment, consider:
+
+1. **Container deployment**: Use Docker for consistent environments
+2. **Environment variables**: Configure network endpoints, ports, and secrets
+3. **Monitoring**: Add logging and metrics for observability
+4. **Scaling**: Use load balancers for horizontal scaling
+
+Example production Dockerfile for backend:
+
+```dockerfile
+FROM node:22-alpine
+WORKDIR /app
+COPY package*.json ./
+COPY backend/ ./backend/
+COPY api/ ./api/
+RUN npm ci --omit=dev
+EXPOSE 4000
+CMD ["node", "backend/dist/index.js"]
+```
+
+### Frontend Deployment
+
+Build and deploy the frontend:
+
+```bash
+cd frontend
+npm run build
+# Output: dist/ folder
+
+# Deploy to Vercel, Netlify, or any static hosting
+npx vercel --prod
+```
 
 ## Understanding the Transaction Flow
 
@@ -796,6 +1035,131 @@ Now that you have a working dApp, consider adding:
 4. **Events**: Emit events for deposit/withdraw notifications
 5. **Testing**: Add unit tests for contract circuits
 
+## Advanced Features and Extensions
+
+### Adding Token Support
+
+To extend the vault for handling Midnight's native NIGHT token, you'd modify the contract:
+
+```compact
+export ledger tokenBalance: Uint64;
+
+export circuit depositToken(amount: Uint64): [] {
+  assert(vaultState == VaultState.ACTIVE, "Vault is not active");
+  tokenBalance = tokenBalance + amount;
+  sequence.increment(1);
+}
+```
+
+### Multi-Signature Vault
+
+For multi-signature support, you need to:
+
+1. **Store multiple owners**: Change the owner type to store multiple public keys
+2. **Add threshold logic**: Require M of N signatures for operations
+
+```compact
+export ledger owners: Vector<3, Bytes<32>>;
+export ledger requiredSignatures: Uint8;
+
+pure circuit verifySignatures(signatures: Vector<2, Bytes<32>>): bool {
+  // Check that at least requiredSignatures are valid
+  // ...
+}
+```
+
+### Time-Locked Withdrawals
+
+Add a time-based withdrawal delay:
+
+```compact
+export ledger lockUntil: Timestamp;
+
+export circuit requestWithdrawal(amount: Uint64): [] {
+  assert(vaultState == VaultState.ACTIVE, "Vault is not active");
+  lockUntil = currentTime() + 86400000; // 24 hour lock
+}
+
+export circuit confirmWithdrawal(amount: Uint64): [] {
+  assert(currentTime() >= lockUntil, "Withdrawal is still locked");
+  // ... execute withdrawal
+}
+```
+
+### Event Emission
+
+Midnight contracts can emit events for off-chain monitoring:
+
+```compact
+export event DepositEvent {
+  amount: Uint64,
+  timestamp: Timestamp
+}
+
+export circuit deposit(amount: Uint64): [] {
+  emit DepositEvent({ amount, timestamp: currentTime() });
+  // ...
+}
+```
+
+## Architecture Deep Dive
+
+### Understanding the Zero-Knowledge Proof Flow
+
+When a user interacts with your vault contract, the following happens:
+
+1. **Transaction Building**: The frontend builds a transaction object with the circuit name and inputs
+2. **Witness Resolution**: The wallet retrieves the private data (secret key) via the witness function
+3. **Proof Generation**: The proof server runs the circuit with the witnesses to generate a ZK proof
+4. **Transaction Submission**: The proven transaction is submitted to the Midnight node
+5. **Verification**: The node verifies the proof without seeing the private data
+6. **State Update**: The indexer processes the transaction and updates the contract state
+
+### The Role of Each Component
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Frontend   │────▶│   Backend   │────▶│   Midnight  │
+│  (React)    │     │  (Express)  │     │   Network   │
+└─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                    │
+       │                   │                    │
+       ▼                   ▼                    ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Wallet    │────▶│Proof Server │     │   Indexer   │
+│  (Lace/1AM) │     │   (Docker)  │     │             │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+- **Frontend**: User interface for wallet connection, transaction building, and state display
+- **Backend**: Manages deployed contracts, provides API endpoints, stores off-chain data
+- **Wallet**: Stores private keys, connects to Midnight network, signs transactions
+- **Proof Server**: Generates zero-knowledge proofs for circuit execution
+- **Node**: Validates transactions and maintains the blockchain
+- **Indexer**: Indexes blockchain data and provides queryable state
+
+### Privacy Model Explained
+
+Midnight's privacy model is unique in the blockchain space:
+
+1. **Public Verification**: Anyone can verify that a transaction is valid without knowing the inputs
+2. **Private Data**: Sensitive data (like the secret key) never leaves the user's wallet
+3. **Selective Disclosure**: The `disclose()` function allows committing private data to public state when needed
+
+In our vault:
+- The **owner** is stored as a hash, not the actual public key
+- The **secret key** is only used in witnesses, never transmitted
+- The **amounts** can be kept private (though this demo shows them publicly)
+
+### Scaling Considerations
+
+For production dApps:
+
+1. **State Storage**: Keep only essential data on-chain; use IPFS or centralized storage for large data
+2. **Circuit Complexity**: Complex circuits increase proving time; balance functionality with performance
+3. **Caching**: Cache contract state in the backend to reduce indexer queries
+4. **Batch Operations**: Consider batching multiple operations into single transactions for cost efficiency
+
 ## Conclusion
 
 You've built a complete Midnight dApp from scratch. The project demonstrates:
@@ -805,5 +1169,8 @@ You've built a complete Midnight dApp from scratch. The project demonstrates:
 - Wallet integration via DApp Connector API
 - React frontend with deploy, interact, and state-read flows
 - Backend for off-chain data management
+- Docker setup for the proof server
+- Testing and security best practices
+- Production deployment considerations
 
 This architecture can be extended for more complex privacy-preserving applications. Explore the [Midnight documentation](https://docs.midnight.network/) for more advanced topics and happy building!
