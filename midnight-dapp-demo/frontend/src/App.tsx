@@ -21,7 +21,7 @@ function App() {
   const [amount, setAmount] = useState<string>('100');
   const [status, setStatus] = useState<string>('Connect your wallet to get started');
 
-  const detectWallet = () => {
+  const detectWallet = (): any => {
     const wallets = window.midnight;
     if (!wallets) return undefined;
     return Object.values(wallets)[0];
