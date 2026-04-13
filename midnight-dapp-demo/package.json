@@ -1,0 +1,24 @@
+{
+  "name": "midnight-dapp-demo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "contracts",
+    "api",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "compile": "npm run compile --workspaces",
+    "test": "npm run test --workspaces",
+    "env:up": "docker compose up -d",
+    "env:down": "docker compose down",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:api": "npm run dev --workspace=api",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
