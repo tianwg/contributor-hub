@@ -6,11 +6,12 @@
   "scripts": {
     "compile": "compact compile src/private-vault.compact src/managed/private-vault",
     "build": "tsc",
-    "test": "tsc && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "npx jest"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
     "@types/node": "^20.10.0",
+    "@types/jest": "^29.5.11",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1"
   },
