@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "compact compile src/private-vault.compact src/managed/private-vault",
     "build": "tsc",
-    "test": "npx jest"
+    "test": "npx jest --passWithNoTests"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

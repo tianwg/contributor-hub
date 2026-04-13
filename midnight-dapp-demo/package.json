@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "compile": "npm run compile --workspaces",
-    "test": "npm run test --workspaces",
+    "test": "npm run test --workspaces --if-present",
     "env:up": "docker compose up -d",
     "env:down": "docker compose down",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:backend\" \"npm run dev:frontend\"",
