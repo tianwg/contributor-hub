@@ -162,7 +162,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contractAddress,
-          amount: BigInt(amount),
+          amount: Number(amount),
           node: config.node,
           indexer: config.indexer,
         }),
@@ -197,7 +197,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contractAddress,
-          amount: BigInt(amount),
+          amount: Number(amount),
           node: config.node,
           indexer: config.indexer,
         }),

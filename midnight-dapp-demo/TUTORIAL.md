@@ -481,7 +481,7 @@ function App() {
       const response = await fetch('/api/deposit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contractAddress, amount: BigInt(amount) }),
+        body: JSON.stringify({ contractAddress, amount: Number(amount) }),
       });
       await response.json();
       await readState();
@@ -500,7 +500,7 @@ function App() {
       const response = await fetch('/api/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contractAddress, amount: BigInt(amount) }),
+        body: JSON.stringify({ contractAddress, amount: Number(amount) }),
       });
       await response.json();
       await readState();
