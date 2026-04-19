@@ -91,6 +91,15 @@ app.post('/api/deposit', (req: Request, res: Response) => {
   if (!amount) {
     return res.status(400).json({ error: 'Amount required' });
   }
+
+  if (typeof amount !== 'number' && typeof amount !== 'string') {
+    return res.status(400).json({ error: 'Amount must be a number or string' });
+  }
+
+  const amountBigInt = BigInt(amount);
+  if (amountBigInt < 0n) {
+    return res.status(400).json({ error: 'Amount must be non-negative' });
+  }
   
   const contract = deployedContracts.get(contractAddress);
   
@@ -102,7 +111,6 @@ app.post('/api/deposit', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Vault is not active' });
   }
   
-  const amountBigInt = BigInt(amount);
   contract.state.totalDeposits += amountBigInt;
   contract.state.sequence += 1n;
   
@@ -125,6 +133,15 @@ app.post('/api/withdraw', (req: Request, res: Response) => {
   if (!amount) {
     return res.status(400).json({ error: 'Amount required' });
   }
+
+  if (typeof amount !== 'number' && typeof amount !== 'string') {
+    return res.status(400).json({ error: 'Amount must be a number or string' });
+  }
+
+  const amountBigInt = BigInt(amount);
+  if (amountBigInt < 0n) {
+    return res.status(400).json({ error: 'Amount must be non-negative' });
+  }
   
   const contract = deployedContracts.get(contractAddress);
   
@@ -136,7 +153,6 @@ app.post('/api/withdraw', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Vault is not active' });
   }
 
-  const amountBigInt = BigInt(amount);
   if (amountBigInt > contract.state.totalDeposits) {
     return res.status(400).json({ error: 'Insufficient funds' });
   }
