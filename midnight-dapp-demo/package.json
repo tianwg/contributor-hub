@@ -9,7 +9,7 @@
     "backend"
   ],
   "scripts": {
-    "compile": "npm run compile --workspaces",
+    "compile": "npm run compile --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "env:up": "docker compose up -d",
     "env:down": "docker compose down",
