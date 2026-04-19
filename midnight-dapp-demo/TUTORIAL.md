@@ -212,7 +212,7 @@ The witness is never called directly by the contract—instead, it's used by the
 Create `api/src/index.ts` to export the API:
 
 ```typescript
-export * as PrivateVault from "../contracts/src/managed/private-vault/contract/index.js";
+export * as PrivateVault from "../../contracts/src/managed/private-vault/contract/index.js";
 export * from "./witnesses";
 ```
 
