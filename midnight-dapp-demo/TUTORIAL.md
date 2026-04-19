@@ -289,16 +289,21 @@ app.post('/api/initialize', (req: Request, res: Response) => {
 
 app.post('/api/deposit', (req: Request, res: Response) => {
   const { contractAddress, amount } = req.body;
-  
-  if (typeof amount !== 'number' && typeof amount !== 'string') {
-    return res.status(400).json({ error: 'Amount must be a number or string' });
+
+  let amountBigInt: bigint;
+
+  if (typeof amount === 'string' && /^-?\d+$/.test(amount)) {
+    amountBigInt = BigInt(amount);
+  } else if (typeof amount === 'number' && Number.isFinite(amount) && Number.isInteger(amount)) {
+    amountBigInt = BigInt(amount);
+  } else {
+    return res.status(400).json({ error: 'Valid integer amount required' });
   }
-  
-  const amountBigInt = BigInt(amount);
+
   if (amountBigInt < 0n) {
     return res.status(400).json({ error: 'Amount must be non-negative' });
   }
-  
+
   const contract = deployedContracts.get(contractAddress);
   
   if (!contract) {
@@ -316,16 +321,21 @@ app.post('/api/deposit', (req: Request, res: Response) => {
 
 app.post('/api/withdraw', (req: Request, res: Response) => {
   const { contractAddress, amount } = req.body;
-  
-  if (typeof amount !== 'number' && typeof amount !== 'string') {
-    return res.status(400).json({ error: 'Amount must be a number or string' });
+
+  let amountBigInt: bigint;
+
+  if (typeof amount === 'string' && /^-?\d+$/.test(amount)) {
+    amountBigInt = BigInt(amount);
+  } else if (typeof amount === 'number' && Number.isFinite(amount) && Number.isInteger(amount)) {
+    amountBigInt = BigInt(amount);
+  } else {
+    return res.status(400).json({ error: 'Valid integer amount required' });
   }
-  
-  const amountBigInt = BigInt(amount);
+
   if (amountBigInt < 0n) {
     return res.status(400).json({ error: 'Amount must be non-negative' });
   }
-  
+
   const contract = deployedContracts.get(contractAddress);
   
   if (!contract) {

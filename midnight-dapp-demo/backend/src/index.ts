@@ -97,29 +97,30 @@ app.post('/api/deposit', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Contract address required' });
   }
 
-  if (!amount) {
-    return res.status(400).json({ error: 'Amount required' });
+  let amountBigInt: bigint;
+
+  if (typeof amount === 'string' && /^-?\d+$/.test(amount)) {
+    amountBigInt = BigInt(amount);
+  } else if (typeof amount === 'number' && Number.isFinite(amount) && Number.isInteger(amount)) {
+    amountBigInt = BigInt(amount);
+  } else {
+    return res.status(400).json({ error: 'Valid integer amount required' });
   }
 
-  if (typeof amount !== 'number' && typeof amount !== 'string') {
-    return res.status(400).json({ error: 'Amount must be a number or string' });
-  }
-
-  const amountBigInt = BigInt(amount);
   if (amountBigInt < 0n) {
     return res.status(400).json({ error: 'Amount must be non-negative' });
   }
-  
+
   const contract = deployedContracts.get(contractAddress);
-  
+
   if (!contract) {
     return res.status(404).json({ error: 'Contract not found' });
   }
-  
+
   if (contract.state.vaultState !== 1) {
     return res.status(400).json({ error: 'Vault is not active' });
   }
-  
+
   contract.state.totalDeposits += amountBigInt;
   contract.state.sequence += 1n;
   
@@ -139,25 +140,26 @@ app.post('/api/withdraw', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Contract address required' });
   }
 
-  if (!amount) {
-    return res.status(400).json({ error: 'Amount required' });
+  let amountBigInt: bigint;
+
+  if (typeof amount === 'string' && /^-?\d+$/.test(amount)) {
+    amountBigInt = BigInt(amount);
+  } else if (typeof amount === 'number' && Number.isFinite(amount) && Number.isInteger(amount)) {
+    amountBigInt = BigInt(amount);
+  } else {
+    return res.status(400).json({ error: 'Valid integer amount required' });
   }
 
-  if (typeof amount !== 'number' && typeof amount !== 'string') {
-    return res.status(400).json({ error: 'Amount must be a number or string' });
-  }
-
-  const amountBigInt = BigInt(amount);
   if (amountBigInt < 0n) {
     return res.status(400).json({ error: 'Amount must be non-negative' });
   }
-  
+
   const contract = deployedContracts.get(contractAddress);
-  
+
   if (!contract) {
     return res.status(404).json({ error: 'Contract not found' });
   }
-  
+
   if (contract.state.vaultState !== 1) {
     return res.status(400).json({ error: 'Vault is not active' });
   }
