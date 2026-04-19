@@ -19,6 +19,15 @@ interface DeployedContract {
 
 const deployedContracts = new Map<string, DeployedContract>();
 
+function serializeState(state: DeployedContract['state']) {
+  return {
+    vaultState: state.vaultState,
+    totalDeposits: state.totalDeposits.toString(),
+    owner: Buffer.from(state.owner).toString('hex'),
+    sequence: state.sequence.toString(),
+  };
+}
+
 app.post('/api/deploy', (req: Request, res: Response) => {
   const { node, indexer } = req.body;
   
@@ -54,7 +63,7 @@ app.get('/api/state', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Contract not found' });
   }
   
-  res.json(contract.state);
+  res.json(serializeState(contract.state));
 });
 
 app.post('/api/initialize', (req: Request, res: Response) => {
@@ -77,7 +86,7 @@ app.post('/api/initialize', (req: Request, res: Response) => {
   res.json({ 
     success: true, 
     transaction: '0xinitialized',
-    state: contract.state 
+    state: serializeState(contract.state) 
   });
 });
 
@@ -119,7 +128,7 @@ app.post('/api/deposit', (req: Request, res: Response) => {
   res.json({ 
     success: true, 
     transaction: '0xdeposit',
-    state: contract.state 
+    state: serializeState(contract.state) 
   });
 });
 
@@ -165,7 +174,7 @@ app.post('/api/withdraw', (req: Request, res: Response) => {
   res.json({ 
     success: true, 
     transaction: '0xwithdraw',
-    state: contract.state 
+    state: serializeState(contract.state) 
   });
 });
 
@@ -180,7 +189,7 @@ app.post('/api/lock', (req: Request, res: Response) => {
   
   contract.state.vaultState = 2;
   
-  res.json({ success: true, state: contract.state });
+  res.json({ success: true, state: serializeState(contract.state) });
 });
 
 app.post('/api/unlock', (req: Request, res: Response) => {
@@ -194,7 +203,7 @@ app.post('/api/unlock', (req: Request, res: Response) => {
   
   contract.state.vaultState = 1;
   
-  res.json({ success: true, state: contract.state });
+  res.json({ success: true, state: serializeState(contract.state) });
 });
 
 app.get('/api/health', (req: Request, res: Response) => {

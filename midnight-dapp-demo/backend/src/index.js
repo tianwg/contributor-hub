@@ -5,6 +5,15 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 const deployedContracts = new Map();
+
+function serializeState(state) {
+  return {
+    vaultState: state.vaultState,
+    totalDeposits: state.totalDeposits.toString(),
+    owner: Buffer.from(state.owner).toString('hex'),
+    sequence: state.sequence.toString(),
+  };
+}
 app.post('/api/deploy', (req, res) => {
     const { node, indexer } = req.body;
     const address = `vault_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -30,7 +39,7 @@ app.get('/api/state', (req, res) => {
     if (!contract) {
         return res.status(404).json({ error: 'Contract not found' });
     }
-    res.json(contract.state);
+    res.json(serializeState(contract.state));
 });
 app.post('/api/initialize', (req, res) => {
     const { contractAddress } = req.body;
@@ -46,7 +55,7 @@ app.post('/api/initialize', (req, res) => {
     res.json({
         success: true,
         transaction: '0xinitialized',
-        state: contract.state
+        state: serializeState(contract.state)
     });
 });
 app.post('/api/deposit', (req, res) => {
@@ -77,7 +86,7 @@ app.post('/api/deposit', (req, res) => {
     res.json({
         success: true,
         transaction: '0xdeposit',
-        state: contract.state
+        state: serializeState(contract.state)
     });
 });
 app.post('/api/withdraw', (req, res) => {
@@ -111,7 +120,7 @@ app.post('/api/withdraw', (req, res) => {
     res.json({
         success: true,
         transaction: '0xwithdraw',
-        state: contract.state
+        state: serializeState(contract.state)
     });
 });
 app.post('/api/lock', (req, res) => {
@@ -121,7 +130,7 @@ app.post('/api/lock', (req, res) => {
         return res.status(404).json({ error: 'Contract not found' });
     }
     contract.state.vaultState = 2;
-    res.json({ success: true, state: contract.state });
+    res.json({ success: true, state: serializeState(contract.state) });
 });
 app.post('/api/unlock', (req, res) => {
     const { contractAddress } = req.body;
@@ -130,7 +139,7 @@ app.post('/api/unlock', (req, res) => {
         return res.status(404).json({ error: 'Contract not found' });
     }
     contract.state.vaultState = 1;
-    res.json({ success: true, state: contract.state });
+    res.json({ success: true, state: serializeState(contract.state) });
 });
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', contracts: deployedContracts.size });
